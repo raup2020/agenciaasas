@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="site-title">SISTEMA AGÊNCIA ASAS - GESTÃO PRO</title>
+    <style id="custom-theme">
+        :root { --turquesa: #40E0D0; --ouro: #D4AF37; --dark: #0f0f0f; --card: #1c1c1c; --danger: #ff4444; }
+    </style>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; margin: 0; }
+        .hidden { display: none !important; }
+        header { background: var(--card); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--turquesa); }
+        nav { padding: 10px 25px; background: #252525; display: flex; gap: 10px; flex-wrap: wrap; }
+        .container { padding: 25px; max-width: 1400px; margin: auto; }
+        
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 2px; }
+        .btn-main { background: var(--turquesa); color: black; }
+        .btn-gold { background: var(--ouro); color: black; }
+        .btn-del { background: var(--danger); color: white; }
+
+        .form-group { background: var(--card); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #333; }
+        input, select, textarea { background: #333; color: white; border: 1px solid #555; padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        
+        table { width: 100%; border-collapse: collapse; background: var(--card); margin-top: 10px; }
+        th { background: var(--turquesa); color: black; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #333; }
+
+        /* SISTEMA DE ABAS */
+        .tabs-nav { display: flex; gap: 5px; margin-top: 20px; overflow-x: auto; padding-bottom: 10px; }
+        .tab-btn { background: #333; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px 5px 0 0; }
+        .tab-btn.active { background: var(--turquesa); color: black; font-weight: bold; }
+        .tab-content { border: 1px solid var(--turquesa); padding: 15px; background: var(--card); }
+
+        .logo-img { max-height: 50px; vertical-align: middle; margin-right: 10px; }
+        .badge { padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+        .badge-true { background: #00ff00; color: black; }
+        .badge-false { background: #555; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div id="login-screen">
+        <div style="background: var(--card); padding: 40px; border-radius: 12px; border: 2px solid var(--ouro); text-align: center; width: 300px; margin: 100px auto;">
+            <div id="login-logo-place"></div>
+            <h2 id="login-text" style="color: var(--turquesa)">AGÊNCIA ASAS</h2>
+            <input type="text" id="login-user" placeholder="Usuário">
+            <input type="password" id="login-pass" placeholder="Senha">
+            <button class="btn btn-main" style="width: 100%" onclick="sistema.autenticar()">ENTRAR</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="hidden" id="main-header">
+        <div id="brand-area">
+            <img id="app-logo" src="" class="logo-img hidden">
+            <span id="app-name" style="font-size: 20px; font-weight: bold;">AGÊNCIA ASAS</span>
+        </div>
+        <div>
+            <span id="user-display" style="margin-right:15px; color: var(--ouro)"></span>
+            <button class="btn btn-del" onclick="sistema.logout()">Sair</button>
+        </div>
+    </header>
+
+    <nav class="hidden" id="main-nav">
+        <button class="btn btn-main" onclick="sistema.mudarTela('dash')">Painel de Batalhas</button>
+        <button id="nav-users" class="btn btn-gold" onclick="sistema.mudarTela('users')">Usuários/Senhas</button>
+        <button id="nav-design" class="btn btn-gold" onclick="sistema.mudarTela('design')">Personalizar Sistema</button>
+    </nav>
+
+    <div class="container hidden" id="main-app">
+        
+        <!-- DASHBOARD -->
+        <div id="tela-dash">
+            <div class="form-group" id="form-batalha">
+                <h3 id="txt-nova-batalha">Novo Agendamento[cite: 1, 2]</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+                    <input type="date" id="b-data">
+                    <input type="time" id="b-hora">
+                    <input type="text" id="b-streamer" placeholder="Nosso Streamer">
+                    <input type="text" id="b-oponente" placeholder="Oponente (Vazio = Busca)">
+                    <input type="text" id="b-agencia-op" placeholder="Agência Oponente">
+                    <input type="text" id="b-contato" placeholder="Contato">
+                    <input type="number" id="b-rounds" placeholder="Rounds">
+                    <input type="text" id="b-meta" placeholder="Meta">
+                    <select id="b-banner">
+                        <option value="Não">Banner: Não</option>
+                        <option value="Sim">Banner: Sim</option>
+                    </select>
+                </div>
+                <button class="btn btn-main" id="btn-save-battle" onclick="sistema.salvarBatalha()" style="margin-top:15px">Salvar Registro</button>
+            </div>
+
+            <h3 class="section-header">🔍 BUSCA DE OPONENTES</h3>
+            <table>
+                <thead><tr><th>Data/Hora</th><th>Streamer</th><th>Meta</th><th>Ações</th></tr></thead>
+                <tbody id="lista-busca"></tbody>
+            </table>
+
+            <h3 class="section-header">📅 BATALHAS CONFIRMADAS</h3>
+            <div class="tabs-nav" id="tabs-meses"></div>
+            <div id="tab-content-area" class="tab-content"></div>
+        </div>
+
+        <!-- GESTÃO USUÁRIOS -->
+        <div id="tela-users" class="hidden">
+            <div class="form-group">
+                <h3>Gerenciar Usuários e Senhas</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="u-nome" placeholder="Login">
+                    <input type="password" id="u-pass" placeholder="Senha">
+                    <select id="u-nivel">
+                        <option value="comum">Comum</option>
+                        <option value="adm">Admin</option>
+                        <option value="master">Master</option>
+                    </select>
+                    <button class="btn btn-gold" onclick="sistema.salvarUsuario()">Criar/Atualizar</button>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>Usuário</th><th>Nível</th><th>Ações</th></tr></thead>
+                <tbody id="lista-usuarios"></tbody>
+            </table>
+        </div>
+
+        <!-- PERSONALIZAÇÃO MASTER -->
+        <div id="tela-design" class="hidden">
+            <div class="form-group">
+                <h3>Personalizar Sistema (Apenas Master)</h3>
+                <label>URL da Logo (PNG Transparente):</label>
+                <input type="text" id="d-logo" placeholder="https://link-da-imagem.png">
+                <label>Nome do Sistema:</label>
+                <input type="text" id="d-nome" placeholder="Ex: Agência ASAS">
+                <label>Cor Principal (Turquesa):</label>
+                <input type="color" id="d-color1" value="#40E0D0">
+                <label>Cor Secundária (Ouro):</label>
+                <input type="color" id="d-color2" value="#D4AF37">
+                <button class="btn btn-main" onclick="sistema.salvarDesign()">Aplicar Mudanças</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sistema = {
+            config: JSON.parse(localStorage.getItem('asas_config')) || { 
+                nome: "AGÊNCIA ASAS", 
+                logo: "", 
+                c1: "#40E0D0", 
+                c2: "#D4AF37" 
+            },
+            usuarios: JSON.parse(localStorage.getItem('asas_users')) || [{user: 'master', pass: '123', nivel: 'master'}],
+            batalhas: JSON.parse(localStorage.getItem('asas_battles')) || [],
+            currentUser: null,
+            editingId: null,
+            activeTab: null,
+
+            autenticar() {
+                const u = document.getElementById('login-user').value;
+                const p = document.getElementById('login-pass').value;
+                const user = this.usuarios.find(x => x.user === u && x.pass === p);
+
+                if (user) {
+                    this.currentUser = user;
+                    this.aplicarDesign();
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-header').classList.remove('hidden');
+                    document.getElementById('main-nav').classList.remove('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+                    document.getElementById('user-display').innerText = `Olá, ${user.user} (${user.nivel})`;
+                    
+                    if(user.nivel !== 'master') {
+                        document.getElementById('nav-design').classList.add('hidden');
+                        document.getElementById('nav-users').classList.add('hidden');
+                    }
+                    if(user.nivel === 'comum') document.getElementById('form-batalha').classList.add('hidden');
+                    
+                    this.renderizar();
+                } else alert("Acesso Negado!");
+            },
+
+            salvarUsuario() {
+                const user = document.getElementById('u-nome').value;
+                const pass = document.getElementById('u-pass').value;
+                const nivel = document.getElementById('u-nivel').value;
+                
+                const existente = this.usuarios.findIndex(x => x.user === user);
+                if(existente > -1) {
+                    this.usuarios[existente].pass = pass;
+                    this.usuarios[existente].nivel = nivel;
+                } else {
+                    this.usuarios.push({user, pass, nivel});
+                }
+                localStorage.setItem('asas_users', JSON.stringify(this.usuarios));
+                this.renderizar();
+                alert("Usuário/Senha atualizado!");
+            },
+
+            salvarDesign() {
+                this.config.logo = document.getElementById('d-logo').value;
+                this.config.nome = document.getElementById('d-nome').value;
+                this.config.c1 = document.getElementById('d-color1').value;
+                this.config.c2 = document.getElementById('d-color2').value;
+                localStorage.setItem('asas_config', JSON.stringify(this.config));
+                this.aplicarDesign();
+                alert("Design Atualizado!");
+            },
+
+            aplicarDesign() {
+                document.getElementById('app-name').innerText = this.config.nome;
+                document.getElementById('login-text').innerText = this.config.nome;
+                document.title = this.config.nome;
+                const logo = document.getElementById('app-logo');
+                if(this.config.logo) {
+                    logo.src = this.config.logo;
+                    logo.classList.remove('hidden');
+                }
+                document.getElementById('custom-theme').innerHTML = `:root { 
+                    --turquesa: ${this.config.c1}; 
+                    --ouro: ${this.config.c2}; 
+                    --dark: #0f0f0f; --card: #1c1c1c; --danger: #ff4444; 
+                }`;
+            },
+
+            salvarBatalha() {
+                const b = {
+                    id: this.editingId || Date.now(),
+                    data: document.getElementById('b-data').value,
+                    hora: document.getElementById('b-hora').value,
+                    streamer: document.getElementById('b-streamer').value,
+                    oponente: document.getElementById('b-oponente').value,
+                    agenciaOp: document.getElementById('b-agencia-op').value,
+                    contato: document.getElementById('b-contato').value,
+                    rounds: document.getElementById('b-rounds').value,
+                    meta: document.getElementById('b-meta').value,
+                    banner: document.getElementById('b-banner').value
+                };
+
+                if(this.editingId) {
+                    const idx = this.batalhas.findIndex(x => x.id === this.editingId);
+                    this.batalhas[idx] = b;
+                    this.editingId = null;
+                } else this.batalhas.push(b);
+
+                localStorage.setItem('asas_battles', JSON.stringify(this.batalhas));
+                location.reload(); 
+            },
+
+            renderizar() {
+                // Lista de Busca
+                const listaBusca = document.getElementById('lista-busca');
+                listaBusca.innerHTML = '';
+                this.batalhas.filter(x => !x.oponente).forEach(b => {
+                    listaBusca.innerHTML += `<tr><td>${b.data} ${b.hora}</td><td>${b.streamer}</td><td>${b.meta}</td>
+                        <td><button onclick="sistema.editarBatalha(${b.id})">✏️</button></td></tr>`;
+                });
+
+                // Abas por Mês
+                const confirmadas = this.batalhas.filter(x => x.oponente);
+                const meses = [...new Set(confirmadas.map(x => x.data.substring(0, 7)))].sort();
+                const nav = document.getElementById('tabs-meses');
+                nav.innerHTML = '';
+                
+                meses.forEach(m => {
+                    const btn = document.createElement('button');
+                    btn.className = `tab-btn ${this.activeTab === m ? 'active' : ''}`;
+                    btn.innerText = m;
+                    btn.onclick = () => { this.activeTab = m; this.renderizar(); };
+                    nav.appendChild(btn);
+                });
+
+                if(this.activeTab) {
+                    const dados = confirmadas.filter(x => x.data.startsWith(this.activeTab)).sort((a,b) => a.data.localeCompare(b.data));
+                    document.getElementById('tab-content-area').innerHTML = `<table>
+                        <thead><tr><th>Data/Hora</th><th>Streamer</th><th>Oponente</th><th>Banner</th><th>Ações</th></tr></thead>
+                        <tbody>${dados.map(b => `<tr>
+                            <td>${b.data} ${b.hora}</td><td>${b.streamer}</td>
+                            <td>${b.oponente}<br><small>${b.agenciaOp}</small></td>
+                            <td><span class="badge badge-${b.banner === 'Sim'}">${b.banner}</span></td>
+                            <td>
+                                <button onclick="sistema.editarBatalha(${b.id})">✏️</button>
+                                <button class="btn-del" onclick="sistema.excluirBatalha(${b.id})">🗑️</button>
+                            </td>
+                        </tr>`).join('')}</tbody></table>`;
+                }
+
+                // Usuários
+                const listaU = document.getElementById('lista-usuarios');
+                listaU.innerHTML = '';
+                this.usuarios.forEach(u => {
+                    listaU.innerHTML += `<tr><td>${u.user}</td><td>${u.nivel}</td>
+                        <td><button class="btn-del" onclick="sistema.resetarSenha('${u.user}')">Resetar</button></td></tr>`;
+                });
+            },
+
+            resetarSenha(u) {
+                const nova = prompt("Digite a nova senha para " + u);
+                if(nova) {
+                    const i = this.usuarios.findIndex(x => x.user === u);
+                    this.usuarios[i].pass = nova;
+                    localStorage.setItem('asas_users', JSON.stringify(this.usuarios));
+                    alert("Senha alterada!");
+                }
+            },
+
+            editarBatalha(id) {
+                const b = this.batalhas.find(x => x.id === id);
+                document.getElementById('b-data').value = b.data;
+                document.getElementById('b-hora').value = b.hora;
+                document.getElementById('b-streamer').value = b.streamer;
+                document.getElementById('b-oponente').value = b.oponente;
+                document.getElementById('b-agencia-op').value = b.agenciaOp;
+                document.getElementById('b-contato').value = b.contato;
+                document.getElementById('b-rounds').value = b.rounds;
+                document.getElementById('b-meta').value = b.meta;
+                document.getElementById('b-banner').value = b.banner;
+                this.editingId = id;
+                window.scrollTo(0,0);
+            },
+
+            excluirBatalha(id) {
+                if(confirm("Excluir?")) {
+                    this.batalhas = this.batalhas.filter(x => x.id !== id);
+                    localStorage.setItem('asas_battles', JSON.stringify(this.batalhas));
+                    this.renderizar();
+                }
+            },
+
+            mudarTela(t) {
+                ['dash', 'users', 'design'].forEach(x => document.getElementById('tela-'+x).classList.toggle('hidden', x !== t));
+            },
+
+            logout() { location.reload(); }
+        };
+        // Inicializar design na tela de login
+        window.onload = () => sistema.aplicarDesign();
+    </script>
+</body>
+</html>
